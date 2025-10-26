@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Claim() {
   const [form, setForm] = useState({
@@ -16,8 +17,8 @@ export default function Claim() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [userMobile, setUserMobile] = useState("");
+  const navigate = useNavigate();
 
-  // ✅ Load logged-in user mobile
   useEffect(() => {
     const mobile = localStorage.getItem("userMobile");
     if (mobile) {
@@ -38,7 +39,6 @@ export default function Claim() {
       setMessage("⚠️ Policy ID or Number is required.");
       return;
     }
-
     if (form.claimAmount <= 0) {
       setMessage("⚠️ Claim amount must be greater than 0.");
       return;
@@ -52,13 +52,12 @@ export default function Claim() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "user-mobile": userMobile, // ✅ backend expects this header
+          "user-mobile": userMobile,
         },
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
-      console.log("Claim API response:", data);
 
       if (res.ok && data.message?.includes("Claim created successfully")) {
         setMessage(
@@ -87,172 +86,220 @@ export default function Claim() {
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.heading}>💰 File a Claim</h2>
-      <p style={{ color: "#555" }}>
-        Enter your <b>Policy ID</b> or <b>Policy Number</b> exactly as shown on
-        your Policies page.
-      </p>
-
-      <form onSubmit={handleSubmit}>
-        <label>Policy ID / Policy Number:</label>
-        <input
-          name="policyId"
-          placeholder="e.g. POL-2025-797B5E or 68fdcf2708003553f4b96556"
-          value={form.policyId}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-
-        <label>Claim Type:</label>
-        <select
-          name="claimType"
-          value={form.claimType}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        >
-          <option value="">-- Select Type --</option>
-          <option value="Health">Health</option>
-          <option value="Accident">Accident</option>
-          <option value="Vehicle">Vehicle</option>
-          <option value="Life">Life</option>
-          <option value="Property">Property</option>
-        </select>
-
-        <label>Claim Amount:</label>
-        <input
-          type="number"
-          name="claimAmount"
-          placeholder="Enter amount"
-          value={form.claimAmount}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-
-        <label>Description:</label>
-        <textarea
-          name="description"
-          placeholder="Describe the reason for your claim"
-          value={form.description}
-          onChange={handleChange}
-          required
-          style={styles.textarea}
-        />
-
-        <h3 style={{ color: "#007bff" }}>🏦 Bank Account Details</h3>
-        <input
-          name="accountHolderName"
-          placeholder="Account Holder Name"
-          value={form.accountHolderName}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-        <input
-          name="bankName"
-          placeholder="Bank Name"
-          value={form.bankName}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-        <input
-          name="bankAccountNumber"
-          placeholder="Account Number"
-          value={form.bankAccountNumber}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-        <input
-          name="ifscCode"
-          placeholder="IFSC Code"
-          value={form.ifscCode}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-
-        <label>Mobile (Auto-Filled):</label>
-        <input
-          name="mobile"
-          value={form.mobile}
-          readOnly
-          style={{ ...styles.input, backgroundColor: "#f5f5f5" }}
-        />
-
-        <button
-          type="submit"
-          disabled={loading || !userMobile}
-          style={{
-            ...styles.button,
-            backgroundColor: loading ? "#999" : "#007bff",
-          }}
-        >
-          {loading ? "Submitting..." : "Submit Claim"}
+    <div style={styles.page}>
+      <div style={styles.card}>
+        {/* 🔙 Back Button */}
+        <button style={styles.backButton} onClick={() => navigate("/dashboard")}>
+          ← Back to Dashboard
         </button>
-      </form>
 
-      {message && (
-        <p
-          style={{
-            marginTop: "15px",
-            color: message.includes("✅") ? "green" : "red",
-            whiteSpace: "pre-line",
-            textAlign: "center",
-          }}
-        >
-          {message}
+        <h2 style={styles.heading}>💰 File a Claim</h2>
+        <p style={styles.subtext}>
+          Enter your <b>Policy ID</b> or <b>Policy Number</b> exactly as shown
+          in your policies.
         </p>
-      )}
+
+        <form onSubmit={handleSubmit}>
+          <label>Policy ID / Policy Number:</label>
+          <input
+            name="policyId"
+            placeholder="e.g. POL-2025-ABC123"
+            value={form.policyId}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <label>Claim Type:</label>
+          <select
+            name="claimType"
+            value={form.claimType}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          >
+            <option value="">-- Select Type --</option>
+            <option value="Health">Health</option>
+            <option value="Accident">Accident</option>
+            <option value="Vehicle">Vehicle</option>
+            <option value="Life">Life</option>
+            <option value="Property">Property</option>
+          </select>
+
+          <label>Claim Amount:</label>
+          <input
+            type="number"
+            name="claimAmount"
+            placeholder="Enter amount"
+            value={form.claimAmount}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <label>Description:</label>
+          <textarea
+            name="description"
+            placeholder="Describe your claim"
+            value={form.description}
+            onChange={handleChange}
+            required
+            style={styles.textarea}
+          />
+
+          <h3 style={styles.bankHeading}>🏦 Bank Account Details</h3>
+
+          <input
+            name="accountHolderName"
+            placeholder="Account Holder Name"
+            value={form.accountHolderName}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+          <input
+            name="bankName"
+            placeholder="Bank Name"
+            value={form.bankName}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+          <input
+            name="bankAccountNumber"
+            placeholder="Account Number"
+            value={form.bankAccountNumber}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+          <input
+            name="ifscCode"
+            placeholder="IFSC Code"
+            value={form.ifscCode}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <label>Mobile (Auto-Filled):</label>
+          <input
+            name="mobile"
+            value={form.mobile}
+            readOnly
+            style={{
+              ...styles.input,
+              backgroundColor: "#f3f4f6",
+              cursor: "not-allowed",
+            }}
+          />
+
+          <button
+            type="submit"
+            disabled={loading || !userMobile}
+            style={{
+              ...styles.button,
+              backgroundColor: loading ? "#93c5fd" : "#2563eb",
+            }}
+          >
+            {loading ? "Submitting..." : "Submit Claim"}
+          </button>
+        </form>
+
+        {message && (
+          <p
+            style={{
+              marginTop: "15px",
+              color: message.includes("✅") ? "green" : "red",
+              whiteSpace: "pre-line",
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
+          >
+            {message}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
-    maxWidth: "650px",
-    margin: "40px auto",
-    padding: "25px",
-    border: "1px solid #ccc",
-    borderRadius: "10px",
-    background: "#fff",
-    boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
+  page: {
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    padding: "50px 20px",
+    fontFamily: "Poppins, Arial, sans-serif",
+  },
+  card: {
+    background: "#ffffff",
+    borderRadius: "12px",
+    padding: "35px 40px",
+    width: "90%",
+    maxWidth: "700px",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+    position: "relative",
+  },
+  backButton: {
+    position: "absolute",
+    top: "15px",
+    left: "15px",
+    background: "#2563eb",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    padding: "6px 10px",
+    cursor: "pointer",
+    fontSize: "14px",
   },
   heading: {
     textAlign: "center",
-    marginBottom: "15px",
-    color: "#333",
+    color: "#1e3a8a",
+    marginBottom: "10px",
+  },
+  subtext: {
+    textAlign: "center",
+    color: "#555",
+    marginBottom: "25px",
+    fontSize: "14px",
   },
   input: {
-    display: "block",
     width: "100%",
-    padding: "10px",
-    margin: "10px 0",
+    padding: "12px",
+    marginBottom: "15px",
+    borderRadius: "8px",
     border: "1px solid #ccc",
-    borderRadius: "6px",
+    fontSize: "15px",
+    background: "#f9fafb",
   },
   textarea: {
-    display: "block",
     width: "100%",
     height: "80px",
-    padding: "10px",
-    margin: "10px 0",
+    padding: "12px",
+    marginBottom: "15px",
+    borderRadius: "8px",
     border: "1px solid #ccc",
-    borderRadius: "6px",
+    fontSize: "15px",
+    background: "#f9fafb",
     resize: "vertical",
   },
   button: {
     width: "100%",
     padding: "12px",
-    color: "white",
+    borderRadius: "8px",
     border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
+    color: "#fff",
     fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+  bankHeading: {
+    color: "#007bff",
+    marginTop: "10px",
+    marginBottom: "15px",
   },
 };
 

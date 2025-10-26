@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ Added navigation
 
 export default function Payment() {
   const [form, setForm] = useState({
@@ -11,6 +12,7 @@ export default function Payment() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const userMobile = localStorage.getItem("userMobile");
+  const navigate = useNavigate(); // ✅ Initialize navigate
 
   useEffect(() => {
     if (userMobile) {
@@ -47,7 +49,7 @@ export default function Payment() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "user-mobile": userMobile, // ✅ Required for backend linkage
+          "user-mobile": userMobile, // ✅ backend linkage
         },
         body: JSON.stringify(form),
       });
@@ -55,11 +57,9 @@ export default function Payment() {
       const data = await res.json();
       console.log("Payment API Response:", data);
 
-      if (res.ok && data.message?.includes("Payment successful")) {
+      if (res.ok) {
         setMessage(
-          `✅ Payment successful!\nTransaction ID: ${
-            data.transactionId || "N/A"
-          }\nAmount: ₹${data.amount || form.amount}\nStatus: ${
+          `✅ Payment successful!\nAmount: ₹${data.amount || form.amount}\nStatus: ${
             data.status || "SUCCESS"
           }`
         );
@@ -83,6 +83,11 @@ export default function Payment() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
+        {/* 🔙 Back Button */}
+        <button style={styles.backButton} onClick={() => navigate("/dashboard")}>
+          ← Back to Dashboard
+        </button>
+
         <h2 style={styles.title}>💳 Make a Payment</h2>
         <p style={styles.subtitle}>
           Enter your <b>Policy ID</b> or <b>Policy Number</b> as shown in your
@@ -170,24 +175,37 @@ export default function Payment() {
   );
 }
 
+/* ---------- Modern UI Styles ---------- */
 const styles = {
   page: {
     minHeight: "100vh",
-    background:
-      "linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1e3a8a 100%)",
+    background: "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "20px",
+    padding: "30px",
+    fontFamily: "Poppins, Arial, sans-serif",
   },
   card: {
     width: "100%",
-    maxWidth: "500px",
-    background: "rgba(255, 255, 255, 0.95)",
-    backdropFilter: "blur(10px)",
+    maxWidth: "520px",
+    backgroundColor: "#ffffff",
     borderRadius: "15px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-    padding: "30px 40px",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+    padding: "40px",
+    position: "relative",
+  },
+  backButton: {
+    position: "absolute",
+    top: "15px",
+    left: "15px",
+    background: "#2563eb",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    padding: "6px 10px",
+    cursor: "pointer",
+    fontSize: "14px",
   },
   title: {
     textAlign: "center",

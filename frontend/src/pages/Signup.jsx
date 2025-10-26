@@ -60,6 +60,7 @@ export default function Signup() {
             value={form.name}
             onChange={handleChange}
             style={styles.input}
+            required
           />
 
           <input
@@ -68,15 +69,17 @@ export default function Signup() {
             value={form.mobile}
             onChange={handleChange}
             style={styles.input}
+            required
           />
 
           <input
             name="password"
-            placeholder="Password"
             type="password"
+            placeholder="Password"
             value={form.password}
             onChange={handleChange}
             style={styles.input}
+            required
           />
 
           <button
@@ -84,7 +87,7 @@ export default function Signup() {
             disabled={loading}
             style={{
               ...styles.button,
-              background: loading ? "#9ca3af" : "#2563eb",
+              background: loading ? "#93c5fd" : "#2563eb",
             }}
           >
             {loading ? "Signing Up..." : "Sign Up"}
@@ -95,9 +98,10 @@ export default function Signup() {
           <p
             style={{
               marginTop: "15px",
-              color: message.includes("⚠️") || message.includes("exists")
-                ? "#dc2626"
-                : "#16a34a",
+              color:
+                message.includes("⚠️") || message.includes("exists")
+                  ? "#dc2626"
+                  : "#16a34a",
               fontWeight: "600",
             }}
           >
@@ -116,7 +120,7 @@ export default function Signup() {
   );
 }
 
-/* ---------- Modern Styles ---------- */
+/* ---------- Improved Styles ---------- */
 const styles = {
   page: {
     display: "flex",
@@ -124,27 +128,25 @@ const styles = {
     alignItems: "center",
     height: "100vh",
     background:
-      "linear-gradient(135deg, #2563eb 0%, #1e40af 50%, #0f172a 100%)",
+      "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)",
     fontFamily: "Poppins, Arial, sans-serif",
-    color: "#fff",
   },
   card: {
-    background: "rgba(255, 255, 255, 0.12)",
-    borderRadius: "15px",
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
     padding: "40px 35px",
-    width: "350px",
+    width: "360px",
     textAlign: "center",
-    boxShadow: "0 8px 25px rgba(0,0,0,0.3)",
-    backdropFilter: "blur(10px)",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
   },
   title: {
-    fontSize: "22px",
-    marginBottom: "5px",
-    color: "#fff",
+    fontSize: "24px",
+    marginBottom: "8px",
+    color: "#1e3a8a",
   },
   subtitle: {
     fontSize: "14px",
-    color: "#d1d5db",
+    color: "#6b7280",
     marginBottom: "25px",
   },
   form: {
@@ -156,11 +158,10 @@ const styles = {
     padding: "12px",
     marginBottom: "15px",
     borderRadius: "8px",
-    border: "1px solid rgba(255,255,255,0.3)",
-    background: "rgba(255,255,255,0.15)",
-    color: "#fff",
+    border: "1px solid #d1d5db",
+    background: "#f9fafb",
+    fontSize: "15px",
     outline: "none",
-    transition: "0.3s",
   },
   button: {
     padding: "12px",
@@ -169,16 +170,16 @@ const styles = {
     color: "#fff",
     fontWeight: "bold",
     cursor: "pointer",
-    fontSize: "15px",
+    fontSize: "16px",
     transition: "0.3s",
   },
   footerText: {
     marginTop: "20px",
     fontSize: "14px",
-    color: "#d1d5db",
+    color: "#4b5563",
   },
   link: {
-    color: "#60a5fa",
+    color: "#2563eb",
     textDecoration: "none",
     fontWeight: "bold",
   },

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ import navigation
 
 export default function CreatePolicy() {
   const [form, setForm] = useState({
@@ -14,13 +15,13 @@ export default function CreatePolicy() {
     email: "",
     nomineeName: "",
     nomineeRelation: "",
-    createdByMobile: "", // 🧩 track logged-in user
+    createdByMobile: "",
   });
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // ✅ useNavigate hook
 
-  // ✅ Pre-fill user mobile from localStorage
   useEffect(() => {
     const userMobile = localStorage.getItem("userMobile");
     if (userMobile) {
@@ -38,7 +39,6 @@ export default function CreatePolicy() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🧩 Simple form validation
     if (form.coverageAmount <= 0 || form.premium <= 0) {
       setMessage("⚠️ Coverage and Premium must be positive values.");
       return;
@@ -56,20 +56,18 @@ export default function CreatePolicy() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "user-mobile": form.createdByMobile, // ✅ required header for backend
+          "user-mobile": form.createdByMobile,
         },
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
-      console.log("Response:", data);
 
       if (res.ok) {
         setMessage(
           `✅ Policy created successfully!\nPolicy ID: ${data.policyId}\nPolicy Number: ${data.policyNumber}`
         );
 
-        // Reset form but keep user’s mobile
         const userMobile = localStorage.getItem("userMobile");
         setForm({
           policyType: "",
@@ -98,209 +96,213 @@ export default function CreatePolicy() {
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>📝 Create New Policy</h2>
-
-      <form onSubmit={handleSubmit} style={styles.form}>
-        {/* Policy Type */}
-        <label>Policy Type:</label>
-        <select
-          name="policyType"
-          value={form.policyType}
-          onChange={handleChange}
-          required
-          style={styles.select}
-        >
-          <option value="">-- Select Policy Type --</option>
-          <option value="Health Insurance">Health Insurance</option>
-          <option value="Life Insurance">Life Insurance</option>
-          <option value="Car Insurance">Car Insurance</option>
-          <option value="Bike Insurance">Bike Insurance</option>
-          <option value="Home Insurance">Home Insurance</option>
-          <option value="Travel Insurance">Travel Insurance</option>
-          <option value="Term Insurance">Term Insurance</option>
-          <option value="Accident Insurance">Accident Insurance</option>
-          <option value="Business Insurance">Business Insurance</option>
-        </select>
-
-        {/* Premium Frequency */}
-        <label>Premium Frequency:</label>
-        <select
-          name="premiumFrequency"
-          value={form.premiumFrequency}
-          onChange={handleChange}
-          required
-          style={styles.select}
-        >
-          <option value="">-- Select Frequency --</option>
-          <option value="Monthly">Monthly</option>
-          <option value="Quarterly">Quarterly</option>
-          <option value="Half-Yearly">Half-Yearly</option>
-          <option value="Annually">Annually</option>
-        </select>
-
-        {/* Coverage & Premium */}
-        <label>Coverage Amount:</label>
-        <input
-          type="number"
-          name="coverageAmount"
-          value={form.coverageAmount}
-          onChange={handleChange}
-          placeholder="e.g., 500000"
-          required
-          style={styles.input}
-        />
-
-        <label>Premium Amount:</label>
-        <input
-          type="number"
-          name="premium"
-          value={form.premium}
-          onChange={handleChange}
-          placeholder="e.g., 1200"
-          required
-          style={styles.input}
-        />
-
-        {/* Dates */}
-        <label>Policy Start Date:</label>
-        <input
-          type="date"
-          name="startDate"
-          value={form.startDate}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-
-        <label>Policy End Date:</label>
-        <input
-          type="date"
-          name="endDate"
-          value={form.endDate}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-
-        <label>Holder Date of Birth:</label>
-        <input
-          type="date"
-          name="holderDOB"
-          value={form.holderDOB}
-          onChange={handleChange}
-          required
-          style={styles.input}
-        />
-
-        {/* Holder Details */}
-        <label>Holder Full Name:</label>
-        <input
-          name="holderName"
-          value={form.holderName}
-          onChange={handleChange}
-          placeholder="e.g., Akshay Sharma"
-          required
-          style={styles.input}
-        />
-
-        <label>Mobile Number:</label>
-        <input
-          name="mobile"
-          value={form.mobile}
-          onChange={handleChange}
-          placeholder="e.g., 9999999999"
-          required
-          readOnly
-          style={{ ...styles.input, backgroundColor: "#f5f5f5" }}
-        />
-
-        <label>Email Address:</label>
-        <input
-          type="email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="e.g., user@example.com"
-          required
-          style={styles.input}
-        />
-
-        {/* Nominee */}
-        <label>Nominee Name:</label>
-        <input
-          name="nomineeName"
-          value={form.nomineeName}
-          onChange={handleChange}
-          placeholder="e.g., Riya Sharma"
-          required
-          style={styles.input}
-        />
-
-        <label>Nominee Relation:</label>
-        <select
-          name="nomineeRelation"
-          value={form.nomineeRelation}
-          onChange={handleChange}
-          required
-          style={styles.select}
-        >
-          <option value="">-- Select Relation --</option>
-          <option value="Wife">Wife</option>
-          <option value="Husband">Husband</option>
-          <option value="Son">Son</option>
-          <option value="Daughter">Daughter</option>
-          <option value="Father">Father</option>
-          <option value="Mother">Mother</option>
-          <option value="Brother">Brother</option>
-          <option value="Sister">Sister</option>
-          <option value="Other">Other</option>
-        </select>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            ...styles.button,
-            backgroundColor: loading ? "#aaa" : "#007bff",
-          }}
-        >
-          {loading ? "Creating Policy..." : "Create Policy"}
+    <div style={styles.page}>
+      <div style={styles.card}>
+        {/* 🔙 Back Button */}
+        <button style={styles.backButton} onClick={() => navigate("/dashboard")}>
+          ← Back to Dashboard
         </button>
-      </form>
 
-      {message && (
-        <div
-          style={{
-            marginTop: "20px",
-            textAlign: "center",
-            color: message.includes("✅") ? "green" : "red",
-            fontWeight: "bold",
-            whiteSpace: "pre-line",
-          }}
-        >
-          {message}
-        </div>
-      )}
+        <h2 style={styles.title}>📝 Create New Policy</h2>
+
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <label>Policy Type:</label>
+          <select
+            name="policyType"
+            value={form.policyType}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          >
+            <option value="">-- Select Policy Type --</option>
+            <option value="Health Insurance">Health Insurance</option>
+            <option value="Life Insurance">Life Insurance</option>
+            <option value="Car Insurance">Car Insurance</option>
+            <option value="Bike Insurance">Bike Insurance</option>
+            <option value="Home Insurance">Home Insurance</option>
+            <option value="Travel Insurance">Travel Insurance</option>
+            <option value="Term Insurance">Term Insurance</option>
+            <option value="Accident Insurance">Accident Insurance</option>
+            <option value="Business Insurance">Business Insurance</option>
+          </select>
+
+          <label>Premium Frequency:</label>
+          <select
+            name="premiumFrequency"
+            value={form.premiumFrequency}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          >
+            <option value="">-- Select Frequency --</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Quarterly">Quarterly</option>
+            <option value="Half-Yearly">Half-Yearly</option>
+            <option value="Annually">Annually</option>
+          </select>
+
+          <label>Coverage Amount:</label>
+          <input
+            type="number"
+            name="coverageAmount"
+            value={form.coverageAmount}
+            onChange={handleChange}
+            placeholder="e.g., 500000"
+            required
+            style={styles.input}
+          />
+
+          <label>Premium Amount:</label>
+          <input
+            type="number"
+            name="premium"
+            value={form.premium}
+            onChange={handleChange}
+            placeholder="e.g., 1200"
+            required
+            style={styles.input}
+          />
+
+          <label>Policy Start Date:</label>
+          <input
+            type="date"
+            name="startDate"
+            value={form.startDate}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <label>Policy End Date:</label>
+          <input
+            type="date"
+            name="endDate"
+            value={form.endDate}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          />
+
+          <label>Holder Full Name:</label>
+          <input
+            name="holderName"
+            value={form.holderName}
+            onChange={handleChange}
+            placeholder="e.g., Akshay Sharma"
+            required
+            style={styles.input}
+          />
+
+          <label>Email Address:</label>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="e.g., user@example.com"
+            required
+            style={styles.input}
+          />
+
+          <label>Nominee Name:</label>
+          <input
+            name="nomineeName"
+            value={form.nomineeName}
+            onChange={handleChange}
+            placeholder="e.g., Riya Sharma"
+            required
+            style={styles.input}
+          />
+
+          <label>Nominee Relation:</label>
+          <select
+            name="nomineeRelation"
+            value={form.nomineeRelation}
+            onChange={handleChange}
+            required
+            style={styles.input}
+          >
+            <option value="">-- Select Relation --</option>
+            <option value="Wife">Wife</option>
+            <option value="Husband">Husband</option>
+            <option value="Son">Son</option>
+            <option value="Daughter">Daughter</option>
+            <option value="Father">Father</option>
+            <option value="Mother">Mother</option>
+            <option value="Brother">Brother</option>
+            <option value="Sister">Sister</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              ...styles.button,
+              backgroundColor: loading ? "#93c5fd" : "#2563eb",
+            }}
+          >
+            {loading ? "Creating Policy..." : "Create Policy"}
+          </button>
+        </form>
+
+        {message && (
+          <p
+            style={{
+              marginTop: "20px",
+              textAlign: "center",
+              color: message.includes("✅") ? "green" : "red",
+              fontWeight: "bold",
+              whiteSpace: "pre-line",
+            }}
+          >
+            {message}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
-    maxWidth: "700px",
-    margin: "40px auto",
-    padding: "30px",
-    border: "1px solid #ddd",
+  page: {
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    padding: "50px 20px",
+    fontFamily: "Poppins, Arial, sans-serif",
+  },
+  card: {
+    backgroundColor: "#ffffff",
     borderRadius: "12px",
-    boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
-    backgroundColor: "#fff",
+    padding: "40px",
+    width: "90%",
+    maxWidth: "750px",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+    position: "relative",
+  },
+  backButton: {
+    position: "absolute",
+    top: "15px",
+    left: "15px",
+    background: "#2563eb",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    padding: "6px 10px",
+    cursor: "pointer",
+    fontSize: "14px",
   },
   title: {
     textAlign: "center",
-    color: "#333",
-    marginBottom: "20px",
+    color: "#1e3a8a",
+    marginBottom: "25px",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
   },
   input: {
     width: "100%",
@@ -308,14 +310,7 @@ const styles = {
     margin: "8px 0 15px 0",
     borderRadius: "6px",
     border: "1px solid #ccc",
-  },
-  select: {
-    width: "100%",
-    padding: "10px",
-    margin: "8px 0 15px 0",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    backgroundColor: "#fff",
+    background: "#f9fafb",
   },
   button: {
     width: "100%",
@@ -325,6 +320,7 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "16px",
+    fontWeight: "bold",
   },
 };
 
