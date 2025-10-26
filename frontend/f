@@ -1,0 +1,80 @@
+// /home/ubuntu/frontend/vite.config.js
+console.log("🔥 vite.config.js loaded by Vite");
+
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import fs from 'fs';
+import path from 'path';
+
+const logDir = '/var/log/frontend';
+
+// Ensure log directory exists
+function ensureLogDir() {
+  try {
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+      console.log(`📁 Created log directory: ${logDir}`);
+    }
+  } catch (err) {
+    console.error(`⚠️ Unable to create log directory: ${logDir}`);
+    console.error('   Run once as root:');
+    console.error('   sudo mkdir -p /var/log/frontend && sudo chown ubuntu:ubuntu /var/log/frontend');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main configuration
+// ---------------------------------------------------------------------------
+export default defineConfig({
+  plugins: [react()],
+
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+  },
+
+  // ✅ Correct Vite 7 style: return a function that receives the server
+  configureServer() {
+    return (server) => {
+      console.log("🚀 Custom Vite middleware active!");
+      ensureLogDir();
+
+      const accessLog = path.join(logDir, 'access.log');
+      const loginLog = path.join(logDir, 'login.log');
+
+      console.log(`✅ Logging all requests to: ${accessLog}`);
+      console.log(`✅ Logging login requests to: ${loginLog}`);
+
+      // Attach middleware
+      server.middlewares.use((req, res, next) => {
+        try {
+          const now = new Date().toISOString();
+          const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString();
+          const ua = (req.headers['user-agent'] || '').toString();
+          const line = `${now} ${ip} "${req.method} ${req.url}" "${ua}"\n`;
+
+          // Print to console for live monitoring
+          console.log(line.trim());
+
+          // Log every request
+          fs.appendFile(accessLog, line, (err) => {
+            if (err) console.error('❌ Access log write error:', err.message);
+          });
+
+          // Log login hits separately
+          if (req.url && req.url.toLowerCase().includes('login')) {
+            fs.appendFile(loginLog, line, (err) => {
+              if (err) console.error('❌ Login log write error:', err.message);
+            });
+          }
+        } catch (e) {
+          console.error('Logging middleware error:', e.message);
+        }
+
+        next(); // continue request processing
+      });
+    };
+  },
+});
+

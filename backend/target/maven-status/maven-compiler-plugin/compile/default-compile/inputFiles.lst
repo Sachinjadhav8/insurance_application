@@ -1,0 +1,14 @@
+/home/ubuntu/backend/src/main/java/com/insurance/repository/PolicyRepository.java
+/home/ubuntu/backend/src/main/java/com/insurance/model/Policy.java
+/home/ubuntu/backend/src/main/java/com/insurance/repository/ClaimRepository.java
+/home/ubuntu/backend/src/main/java/com/insurance/controller/PolicyController.java
+/home/ubuntu/backend/src/main/java/com/insurance/repository/UserRepository.java
+/home/ubuntu/backend/src/main/java/com/insurance/model/User.java
+/home/ubuntu/backend/src/main/java/com/insurance/Application.java
+/home/ubuntu/backend/src/main/java/com/insurance/model/Claim.java
+/home/ubuntu/backend/src/main/java/com/insurance/controller/AuthController.java
+/home/ubuntu/backend/src/main/java/com/insurance/service/UserService.java
+/home/ubuntu/backend/src/main/java/com/insurance/controller/ClaimController.java
+/home/ubuntu/backend/src/main/java/com/insurance/controller/PaymentController.java
+/home/ubuntu/backend/src/main/java/com/insurance/repository/PaymentRepository.java
+/home/ubuntu/backend/src/main/java/com/insurance/model/Payment.java
