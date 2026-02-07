@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // ✅ import navigation
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export default function CreatePolicy() {
   const [form, setForm] = useState({
     policyType: "",
@@ -52,7 +54,7 @@ export default function CreatePolicy() {
     setMessage("");
 
     try {
-      const res = await fetch("http://13.234.122.128:8080/api/policies", {
+      const res = await fetch(`${API_BASE}/api/policies`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

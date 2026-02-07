@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export default function PolicyList() {
   const [policies, setPolicies] = useState([]);
   const [message, setMessage] = useState("Loading policies...");
@@ -14,7 +16,7 @@ export default function PolicyList() {
       return;
     }
 
-    fetch("http://13.234.122.128:8080/api/policies", {
+    fetch(`${API_BASE}/api/policies`, {
       headers: {
         "Content-Type": "application/json",
         "user-mobile": userMobile,

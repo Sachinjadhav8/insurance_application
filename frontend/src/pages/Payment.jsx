@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // ✅ Added navigation
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export default function Payment() {
   const [form, setForm] = useState({
     policyId: "",
@@ -45,7 +47,7 @@ export default function Payment() {
     setMessage("");
 
     try {
-      const res = await fetch("http://13.234.122.128:8080/api/payments", {
+      const res = await fetch(`${API_BASE}/api/payments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

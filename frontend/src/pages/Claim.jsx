@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function Claim() {
   const [form, setForm] = useState({
@@ -48,7 +49,7 @@ export default function Claim() {
     setMessage("");
 
     try {
-      const res = await fetch("http://13.234.122.128:8080/api/claims", {
+      const res = await fetch(`${API_BASE}/api/claims`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

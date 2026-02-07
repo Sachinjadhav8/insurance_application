@@ -3,6 +3,8 @@ import { api } from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export default function Dashboard() {
   const { logout } = useContext(AuthContext);
   const [counts, setCounts] = useState({ policies: 0, claims: 0, payments: 0 });
@@ -23,13 +25,13 @@ export default function Dashboard() {
         const headers = { "user-mobile": userMobile };
 
         const [p, c, pay] = await Promise.allSettled([
-          fetch("http://13.234.122.128:8080/api/policies", { headers }).then(
+          fetch(`${API_BASE}/api/policies`, { headers }).then(
             (r) => r.json()
           ),
-          fetch("http://13.234.122.128:8080/api/claims", { headers }).then(
+          fetch(`${API_BASE}/api/claims`, { headers }).then(
             (r) => r.json()
           ),
-          fetch("http://13.234.122.128:8080/api/payments", { headers }).then(
+          fetch(`${API_BASE}/api/payments`, { headers }).then(
             (r) => r.json()
           ),
         ]);

@@ -2,6 +2,8 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export default function Login() {
   const [form, setForm] = useState({ mobile: "", password: "" });
   const [message, setMessage] = useState("");
@@ -14,7 +16,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://13.234.122.128:8080/api/auth/login", {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
