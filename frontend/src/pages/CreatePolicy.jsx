@@ -54,7 +54,7 @@ export default function CreatePolicy() {
     setMessage("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/policies`, {
+      const res = await fetch(`${API_BASE}/policies`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

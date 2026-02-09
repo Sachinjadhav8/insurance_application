@@ -16,7 +16,7 @@ export default function PolicyList() {
       return;
     }
 
-    fetch(`${API_BASE}/api/policies`, {
+    fetch(`${API_BASE}/policies`, {
       headers: {
         "Content-Type": "application/json",
         "user-mobile": userMobile,

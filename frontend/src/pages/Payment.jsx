@@ -47,7 +47,7 @@ export default function Payment() {
     setMessage("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/payments`, {
+      const res = await fetch(`${API_BASE}/payments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

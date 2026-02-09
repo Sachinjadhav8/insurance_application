@@ -25,13 +25,13 @@ export default function Dashboard() {
         const headers = { "user-mobile": userMobile };
 
         const [p, c, pay] = await Promise.allSettled([
-          fetch(`${API_BASE}/api/policies`, { headers }).then(
+          fetch(`${API_BASE}/policies`, { headers }).then(
             (r) => r.json()
           ),
-          fetch(`${API_BASE}/api/claims`, { headers }).then(
+          fetch(`${API_BASE}/claims`, { headers }).then(
             (r) => r.json()
           ),
-          fetch(`${API_BASE}/api/payments`, { headers }).then(
+          fetch(`${API_BASE}/payments`, { headers }).then(
             (r) => r.json()
           ),
         ]);

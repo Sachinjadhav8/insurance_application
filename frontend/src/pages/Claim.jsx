@@ -49,7 +49,7 @@ export default function Claim() {
     setMessage("");
 
     try {
-      const res = await fetch(`${API_BASE}/api/claims`, {
+      const res = await fetch(`${API_BASE}/claims`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
