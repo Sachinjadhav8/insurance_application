@@ -19,8 +19,8 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: MONGO_URL
-          value: mongodb://mongodb:27017/insurance
+        - name: SPRING_DATA_MONGODB_URI
+          value: mongodb://mongodb.insurance.svc.cluster.local:27017/insurance
 ---
 apiVersion: v1
 kind: Service
