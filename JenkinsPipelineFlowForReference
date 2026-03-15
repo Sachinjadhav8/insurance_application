@@ -1,1 +1,243 @@
+pipeline {
+    agent any
 
+    environment {
+        APP_NAME        = "insurance-backend"
+        DOCKER_IMAGE    = "dockerhub-username/insurance-backend"
+        DEPLOYMENT_NAME = "backend"
+
+        DEPLOY_ENV      = ""
+        K8S_NAMESPACE   = ""
+        KUBECONFIG_ID   = ""
+        IMAGE_TAG       = ""
+        BASE_IMAGE      = ""
+        ACTION          = ""
+    }
+
+    tools {
+        maven 'maven-3.9'
+    }
+
+    stages {
+
+        /* ================================
+           STAGE 1: CHECKOUT
+        ================================= */
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/<org>/insurance_application.git',
+                    credentialsId: 'github-creds'
+            }
+        }
+
+        /* ================================
+           STAGE 2: BUILD & UNIT TEST
+        ================================= */
+        stage('Build & Test') {
+            steps {
+                sh 'mvn clean verify'
+            }
+        }
+
+        /* ================================
+           STAGE 3: SONARQUBE ANALYSIS (CI)
+        ================================= */
+        stage('SonarQube Analysis') {
+            when {
+                branch 'main'
+            }
+            steps {
+                withSonarQubeEnv('sonarqube-server') {
+                    sh """
+                    mvn sonar:sonar \
+                      -Dsonar.projectKey=insurance-backend \
+                      -Dsonar.projectName=insurance-backend
+                    """
+                }
+            }
+        }
+
+        /* ================================
+           STAGE 4: QUALITY GATE
+        ================================= */
+        stage('Sonar Quality Gate') {
+            when {
+                branch 'main'
+            }
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        /* ================================
+           STAGE 5: DETERMINE ENV + CLUSTER
+        ================================= */
+        stage('Determine Environment') {
+            steps {
+                script {
+
+                    if (env.GIT_TAG_NAME == null) {
+                        // DEV
+                        DEPLOY_ENV    = "dev"
+                        K8S_NAMESPACE = "insurance-dev"
+                        KUBECONFIG_ID = "eks-kubeconfig-nonprod"
+                        IMAGE_TAG     = "build-${BUILD_NUMBER}"
+                        BASE_IMAGE    = IMAGE_TAG
+                    }
+                    else if (env.GIT_TAG_NAME ==~ /^v\\d+\\.\\d+\\.\\d+-rc\\d+$/) {
+                        // PRE-PROD
+                        DEPLOY_ENV    = "preprod"
+                        K8S_NAMESPACE = "insurance-preprod"
+                        KUBECONFIG_ID = "eks-kubeconfig-nonprod"
+                        IMAGE_TAG     = env.GIT_TAG_NAME
+                        BASE_IMAGE    = "build-${BUILD_NUMBER}"
+                    }
+                    else if (env.GIT_TAG_NAME ==~ /^v\\d+\\.\\d+\\.\\d+$/) {
+                        // PROD
+                        DEPLOY_ENV    = "prod"
+                        K8S_NAMESPACE = "insurance-prod"
+                        KUBECONFIG_ID = "eks-kubeconfig-prod"
+                        IMAGE_TAG     = env.GIT_TAG_NAME
+                        BASE_IMAGE    = "build-${BUILD_NUMBER}"
+                    }
+                    else {
+                        error "❌ Invalid tag format: ${env.GIT_TAG_NAME}"
+                    }
+
+                    echo """
+====================================
+Environment : ${DEPLOY_ENV}
+Namespace   : ${K8S_NAMESPACE}
+Cluster     : ${KUBECONFIG_ID}
+Image Tag   : ${IMAGE_TAG}
+====================================
+"""
+                }
+            }
+        }
+
+        /* ================================
+           STAGE 6: DOCKER BUILD (DEV ONLY)
+        ================================= */
+        stage('Docker Build & Push (CI)') {
+            when {
+                expression { DEPLOY_ENV == "dev" }
+            }
+            steps {
+                script {
+                    docker.withRegistry(
+                        'https://index.docker.io/v1/',
+                        'dockerhub-creds'
+                    ) {
+                        docker.build("${DOCKER_IMAGE}:${IMAGE_TAG}").push()
+                    }
+                }
+            }
+        }
+
+        /* ================================
+           STAGE 7: DOCKER RETAG (PROMOTION)
+        ================================= */
+        stage('Docker Retag & Push') {
+            when {
+                expression { DEPLOY_ENV == "preprod" || DEPLOY_ENV == "prod" }
+            }
+            steps {
+                script {
+                    docker.withRegistry(
+                        'https://index.docker.io/v1/',
+                        'dockerhub-creds'
+                    ) {
+                        sh """
+                        docker pull ${DOCKER_IMAGE}:${BASE_IMAGE}
+                        docker tag  ${DOCKER_IMAGE}:${BASE_IMAGE} ${DOCKER_IMAGE}:${IMAGE_TAG}
+                        docker push ${DOCKER_IMAGE}:${IMAGE_TAG}
+                        """
+                    }
+                }
+            }
+        }
+
+        /* ================================
+           STAGE 8: DEPLOY (ENV AWARE)
+        ================================= */
+        stage('Deploy Application') {
+            steps {
+                withCredentials([file(
+                    credentialsId: KUBECONFIG_ID,
+                    variable: 'KUBECONFIG'
+                )]) {
+                    sh """
+                    kubectl set image deployment/${DEPLOYMENT_NAME} \
+                    backend=${DOCKER_IMAGE}:${IMAGE_TAG} \
+                    -n ${K8S_NAMESPACE}
+
+                    kubectl rollout status deployment/${DEPLOYMENT_NAME} \
+                    -n ${K8S_NAMESPACE} --timeout=120s
+                    """
+                }
+            }
+        }
+
+        /* ================================
+           STAGE 9: POST-DEPLOY APPROVAL
+        ================================= */
+        stage('Post-Deployment Approval') {
+            when {
+                expression { DEPLOY_ENV == "preprod" || DEPLOY_ENV == "prod" }
+            }
+            steps {
+                script {
+                    ACTION = input(
+                        message: "Deployment completed in ${DEPLOY_ENV}. Choose action:",
+                        parameters: [
+                            choice(name: 'ACTION', choices: ['Continue', 'Rollback'])
+                        ]
+                    )
+                }
+            }
+        }
+
+        /* ================================
+           STAGE 10: ROLLBACK
+        ================================= */
+        stage('Rollback') {
+            when {
+                expression { ACTION == 'Rollback' }
+            }
+            steps {
+                emailext(
+                    subject: "🚨 ${DEPLOY_ENV.toUpperCase()} ROLLBACK | ${JOB_NAME}",
+                    to: "devops@company.com",
+                    body: "Rollback approved for ${DEPLOY_ENV}"
+                )
+                withCredentials([file(
+                    credentialsId: KUBECONFIG_ID,
+                    variable: 'KUBECONFIG'
+                )]) {
+                    sh """
+                    echo "⚠️ Rolling back deployment in ${DEPLOY_ENV}"
+
+                    kubectl rollout undo deployment/${DEPLOYMENT_NAME} \
+                    -n ${K8S_NAMESPACE}
+
+                    kubectl rollout status deployment/${DEPLOYMENT_NAME} \
+                    -n ${K8S_NAMESPACE}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline completed successfully"
+        }
+        failure {
+            echo "❌ Pipeline failed"
+        }
+    }
+}
